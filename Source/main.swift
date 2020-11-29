@@ -17,22 +17,31 @@ import Swifter
 import Dispatch
 import SwiftyJSON
 import Glibc
+import Foundation
 
 // Disable stdout buffer (https://stackoverflow.com/a/28180452/72176)
 setbuf(stdout, nil);
 
+func logRequest(_ request: HttpRequest) {
+  print("\nHandling request: \(request.params as AnyObject)")
+}
+
 let server = HttpServer()
+
+server.middleware.append { request in
+  print("\nHandling request: \(request.path)")
+  return nil
+}
+
 
 // Root path, show help text
 server["/"] = { request in
-  print("\nHandling request: \(request.params as AnyObject)")
-  return HttpResponse.ok(.text("Specify a latitude and longitude to convert."))
+  return HttpResponse.ok(.html("Usage: <code>/degrees/[lat],[lng]</code>, e.g. <a href=\"/degrees/32,34\">/degrees/32,34</a>"))
 }
 
-// Convert latitude and longitude
-server["/:latlng"] = { request in
-
-  print("\nHandling request: \(request.params as AnyObject)")
+// Convert latitude and longitude decimal degrees to plus code
+server["/degrees/:latlng"] = { request in
+  logRequest(request)
 
   // URL param
   var latlng = request.params[":latlng"] ?? ""
@@ -56,7 +65,6 @@ server["/:latlng"] = { request in
   dict["latitude"] = lat
   dict["longitude"] = lng
 
-
   // Encode as a Plus Code
   if let code = OpenLocationCode.encode(latitude: lat,
                                         longitude: lng,
@@ -77,6 +85,8 @@ server["/:latlng"] = { request in
 // Start the server & wait for connections
 let semaphore = DispatchSemaphore(value: 0)
 do {
+  print ("Boot started")
+  //  sleep(8) // artificial delay to simulate startup time
   try server.start(80, forceIPv4: true)
   print("Server has started on port \(try server.port())...")
   semaphore.wait()
