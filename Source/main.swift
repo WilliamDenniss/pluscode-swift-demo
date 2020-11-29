@@ -108,6 +108,24 @@ server["/pi"] = { request in
   return HttpResponse.ok(.text(String(format: "%f", (piDiv4*4))))
 }
 
+// Download remote file
+server["/remote"] = { request in
+
+  var file: String?
+  do {
+      file = try String(contentsOf: URL(string: "http://www.google.com/robots.txt")!)
+  } catch {
+      let errorMsg = ("Download error: \(error).")
+      print(errorMsg)
+      return HttpResponse.ok(.text(errorMsg))
+  }
+
+  if let robots = file {
+    return HttpResponse.ok(.text(robots))
+  }
+  return HttpResponse.ok(.text("Unexpected error"))
+}
+
 // Start the server & wait for connections
 let semaphore = DispatchSemaphore(value: 0)
 do {
@@ -120,3 +138,4 @@ do {
   print("Server start error: \(error)")
   semaphore.signal()
 }
+
