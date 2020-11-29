@@ -93,6 +93,21 @@ server["/readyz"] = { request in
   return HttpResponse.ok(.text("ok"))
 }
 
+// Calculate Pi (demonstration of a CPU intensive task)
+server["/pi"] = { request in
+  logRequest(request)
+
+  var piDiv4: Double = 1
+  var odd: UInt = 3
+  for _ in 0...100000000 {
+    piDiv4 -= 1.0/Double(odd)
+    piDiv4 += 1.0/(Double(odd+2))
+    odd += 4
+  }
+
+  return HttpResponse.ok(.text(String(format: "%f", (piDiv4*4))))
+}
+
 // Start the server & wait for connections
 let semaphore = DispatchSemaphore(value: 0)
 do {
