@@ -82,6 +82,17 @@ server["/degrees/:latlng"] = { request in
   return HttpResponse.ok(.text(json))
 }
 
+// Health and Readiness endpoints for Kubernetes
+server["/healthz"] = { request in
+  logRequest(request)
+  return HttpResponse.ok(.text("ok"))
+}
+server["/readyz"] = { request in
+  logRequest(request)
+  // 
+  return HttpResponse.ok(.text("ok"))
+}
+
 // Start the server & wait for connections
 let semaphore = DispatchSemaphore(value: 0)
 do {
